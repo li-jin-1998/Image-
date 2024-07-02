@@ -143,7 +143,7 @@ class ImageViewer(QMainWindow):
     def show_file_dialog(self):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(self, "Open Image File", self.last_open_path,
-                                                  "Images (*.png *.xpm *.jpg *.bmp);;All Files (*)", options=options)
+                                                  "Images (*.png *.xpm *.jpg *.bmp *.tif);;All Files (*)", options=options)
         if filePath:
             self.last_open_path = os.path.dirname(filePath)
             self.save_config()
