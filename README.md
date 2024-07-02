@@ -22,7 +22,7 @@ To install and run the Image Viewer application, follow these steps:
 1. **Clone the Repository**:
    ```sh
    git clone https://github.com/li-jin-1998/Image-Viewer.git
-   cd image-viewer
+   cd Image-Viewer
    ```
 
 2. **Install Dependencies**:
@@ -35,6 +35,19 @@ To install and run the Image Viewer application, follow these steps:
    ```sh
    python image_viewer.py
    ```
+
+4. **PyInstaller Installation Guide:**
+    ```
+    pyinstaller --name ImageViewer --onefile --windowed main.py
+    ```
+    ```
+    pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python-headless
+    pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller
+    ```
+    
+    ```
+    pyinstaller --clean ImageViewer.spec
+    ```
 
 ## Usage
 
