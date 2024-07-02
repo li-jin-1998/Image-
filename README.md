@@ -38,7 +38,7 @@ To install and run the Image Viewer application, follow these steps:
 
 4. **PyInstaller Installation Guide:**
     ```
-    pyinstaller --name ImageViewer --onefile --windowed main.py
+    pyinstaller --name ImageViewer --onefile --windowed image_viewer.py
     ```
     ```
     pip install -i https://pypi.tuna.tsinghua.edu.cn/simple opencv-python-headless
