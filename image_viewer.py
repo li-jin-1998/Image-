@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QKeySequence
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QVBoxLayout, \
@@ -24,7 +25,7 @@ class GraphicsView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setBackgroundBrush(Qt.black)
+        self.setBackgroundBrush(QColor(180, 180, 180, 80))
         self.setFrameShape(QFrame.NoFrame)
 
     def has_image(self):
@@ -65,7 +66,8 @@ class GraphicsView(QGraphicsView):
             scene_pos = self.mapToScene(mouse_pos)
             if self._image_item.pixmap().rect().contains(scene_pos.toPoint()):
                 color = QColor(self._image_item.pixmap().toImage().pixel(scene_pos.toPoint()))
-                self.parent.update_pixel_label(f'Pixel Value: R={color.red()} G={color.green()} B={color.blue()}', color)
+                self.parent.update_pixel_label(f'Pixel Value: R={color.red()} G={color.green()} B={color.blue()}',
+                                               color)
             else:
                 self.parent.update_pixel_label('Pixel Value: Out of bounds', None)
 
@@ -143,7 +145,8 @@ class ImageViewer(QMainWindow):
     def show_file_dialog(self):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(self, "Open Image File", self.last_open_path,
-                                                  "Images (*.png *.xpm *.jpg *.bmp *.tif);;All Files (*)", options=options)
+                                                  "Images (*.png *.xpm *.jpg *.bmp *.tif);;All Files (*)",
+                                                  options=options)
         if filePath:
             self.last_open_path = os.path.dirname(filePath)
             self.save_config()
@@ -160,6 +163,8 @@ class ImageViewer(QMainWindow):
             palette.setColor(QPalette.Window, color)
             self.pixelLabel.setAutoFillBackground(True)
             self.pixelLabel.setPalette(palette)
+            # color.setAlpha(180)
+            self.graphicsView.setBackgroundBrush(color)
         else:
             self.pixelLabel.setAutoFillBackground(False)
             self.pixelLabel.setStyleSheet("")

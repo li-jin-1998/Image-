@@ -8,7 +8,7 @@ ax.set_xlim(-1.2, 1.2)
 ax.set_ylim(-1, 1)
 ax.axis('off')
 
-# 绘制LM字样的文字
+# 绘制IV字样的文字
 ax.text(-0.5, 0, 'I', fontsize=100, fontweight='bold', va='center', ha='center', alpha=0.5, color='blue')
 ax.text(0.5, 0, 'V', fontsize=100, fontweight='bold', va='center', ha='center', alpha=0.5, color='blue')
 
