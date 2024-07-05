@@ -4,8 +4,11 @@ import sys
 
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QKeySequence
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QVBoxLayout, \
-    QWidget, QFileDialog, QAction, QLabel, QFrame, QShortcut
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QGraphicsView, QGraphicsScene,
+    QGraphicsPixmapItem, QVBoxLayout, QWidget, QFileDialog,
+    QAction, QLabel, QFrame, QShortcut
+)
 
 CONFIG_FILE = 'ImageViewer.json'
 
@@ -14,13 +17,15 @@ class GraphicsView(QGraphicsView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.setMouseTracking(True)
         self._zoom = 0
         self._empty = True
+
         self._scene = QGraphicsScene(self)
         self._image_item = QGraphicsPixmapItem()
         self._scene.addItem(self._image_item)
         self.setScene(self._scene)
+
+        self.setMouseTracking(True)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -46,16 +51,13 @@ class GraphicsView(QGraphicsView):
             self.scale(1 / unity.width(), 1 / unity.height())
             viewrect = self.viewport().rect()
             scenerect = self.transform().mapRect(rect)
-            factor = min(viewrect.width() / scenerect.width(),
-                         viewrect.height() / scenerect.height())
+            factor = min(viewrect.width() / scenerect.width(), viewrect.height() / scenerect.height())
             self.scale(factor, factor)
             self._zoom = 0
 
     def wheelEvent(self, event):
         if self.has_image():
-            factor = 1.25
-            if event.angleDelta().y() < 0:
-                factor = 1.0 / factor
+            factor = 1.25 if event.angleDelta().y() > 0 else 1 / 1.25
             self.scale(factor, factor)
             self._zoom += event.angleDelta().y() / 120
 
@@ -64,10 +66,15 @@ class GraphicsView(QGraphicsView):
         if self.has_image():
             mouse_pos = event.pos()
             scene_pos = self.mapToScene(mouse_pos)
-            if self._image_item.pixmap().rect().contains(scene_pos.toPoint()):
-                color = QColor(self._image_item.pixmap().toImage().pixel(scene_pos.toPoint()))
-                self.parent.update_pixel_label(f'Pixel Value: R={color.red()} G={color.green()} B={color.blue()}',
-                                               color)
+            image_pos = self._image_item.mapFromScene(scene_pos)
+
+            if self._image_item.pixmap().rect().contains(image_pos.toPoint()):
+                color = QColor(self._image_item.pixmap().toImage().pixel(image_pos.toPoint()))
+                self.parent.update_pixel_label(
+                    f'Pixel Value: R={color.red()} G={color.green()} B={color.blue()} '
+                    f'(X={image_pos.x():.0f}, Y={image_pos.y():.0f})',
+                    color
+                )
             else:
                 self.parent.update_pixel_label('Pixel Value: Out of bounds', None)
 
@@ -85,7 +92,6 @@ class ImageViewer(QMainWindow):
         self.setWindowTitle('Image Viewer')
 
         self.graphicsView = GraphicsView(self)
-
         self.pixelLabel = QLabel('Pixel Value:', self)
         self.pixelLabel.setAlignment(Qt.AlignCenter)
 
@@ -144,26 +150,29 @@ class ImageViewer(QMainWindow):
 
     def show_file_dialog(self):
         options = QFileDialog.Options()
-        filePath, _ = QFileDialog.getOpenFileName(self, "Open Image File", self.last_open_path,
-                                                  "Images (*.png *.xpm *.jpg *.bmp *.tif);;All Files (*)",
-                                                  options=options)
+        filePath, _ = QFileDialog.getOpenFileName(
+            self, "Open Image File", self.last_open_path,
+            "Images (*.png *.xpm *.jpg *.bmp *.tif);;All Files (*)",
+            options=options
+        )
         if filePath:
             self.last_open_path = os.path.dirname(filePath)
             self.save_config()
-            self.graphicsView.set_image(QPixmap(filePath))
+            self.load_image(filePath)
+
+    def load_image(self, file_path):
+        self.graphicsView.set_image(QPixmap(file_path))
 
     def update_pixel_label(self, text, color):
         self.pixelLabel.setText(text)
         if color:
-            if color == QColor(0, 0, 0):  # If the color is black
-                self.pixelLabel.setStyleSheet("QLabel { color: white; }")
-            else:
-                self.pixelLabel.setStyleSheet("QLabel { color: black; }")
+            textColor = "white" if color == QColor(0, 0, 0) else "black"
+            self.pixelLabel.setStyleSheet(f"QLabel {{ color: {textColor}; }}")
+
             palette = self.pixelLabel.palette()
             palette.setColor(QPalette.Window, color)
             self.pixelLabel.setAutoFillBackground(True)
             self.pixelLabel.setPalette(palette)
-            # color.setAlpha(180)
             self.graphicsView.setBackgroundBrush(color)
         else:
             self.pixelLabel.setAutoFillBackground(False)
